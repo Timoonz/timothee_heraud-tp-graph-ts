@@ -96,6 +96,8 @@ app.get("/api/route", (req: Request, res: Response) => {
 
   const routing = new RoutingService(graph);
   try {
+    // console.log(graph.findVertexById(origin));
+    // console.log(graph.findVertexById(destination));
     const route = routing.findRoute(
       graph.findVertexById(origin),
       graph.findVertexById(destination)
