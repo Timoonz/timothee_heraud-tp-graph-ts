@@ -5,7 +5,7 @@ export class RouteStyle extends Style {
         super({
             stroke: new Stroke({
                 color: 'red',
-                width: 3,
+                width: 5,
             }),
         });
     }

@@ -5,7 +5,7 @@ export class EdgeStyle extends Style {
         super({
             stroke: new Stroke({
                 color: 'blue',
-                width: 1.0,
+                width: 2.0,
             }),
         });
     }
