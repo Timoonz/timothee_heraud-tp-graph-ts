@@ -10,11 +10,13 @@ export class Edge {
     id: string;
     private _source: Vertex;
     private _target: Vertex;
-    private geometry: LineString;
+    public geometry: LineString;
 
     constructor(source: Vertex, target: Vertex){
         this._source = source;
+        source._outEdges.push(this);
         this._target = target;
+        target._inEdges.push(this);
     }
 
     getLength(): number {

@@ -26,4 +26,8 @@ export class Vertex {
 	 * dijkstra - indicates if the vertex is visited
 	 */
     visited: boolean;
+
+	//0.4 Vertices indexation
+	_inEdges: Edge[] = [];
+	_outEdges: Edge[] = [];
 }
