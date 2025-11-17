@@ -13,4 +13,10 @@ export default class PathNode {
 	 * dijkstra - indicates if the vertex is visited
 	 */
     visited: boolean;
+
+	constructor(cost: number, reachingEdge: Edge|null, visited:boolean){
+		this.cost = cost;
+		this.reachingEdge = reachingEdge;
+		this.visited = visited;
+	}
 }
