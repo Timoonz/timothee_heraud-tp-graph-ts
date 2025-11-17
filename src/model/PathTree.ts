@@ -7,21 +7,14 @@ import { Vertex } from "./Vertex";
 export default class PathTree{
 
     public nodes: Map<Vertex, PathNode>;
-    private graph:Graph;
 
-    constructor(graph: Graph, origin: Vertex){
-        this.graph = graph;
+    constructor(origin: Vertex){
         this.nodes = new Map();
-
-        for (let vertex of this.graph.vertices) {
-            const node = new PathNode();
-            node.cost = origin == vertex ? 0.0 : Number.POSITIVE_INFINITY;
-            node.reachingEdge = null; 
-            node.visited = false;
-            this.nodes.set(vertex, node);
-        }
+        const node = new PathNode(0.0, null, false);
+        this.nodes.set(origin, node);
     }
 
+    //build path to reached destination USED ONLY WHEN DESTINATION FOUND
     public getPath(destination: Vertex): Edge[]{
         const edges: Edge[] = [];
         const node_destination = this.getNode(destination);
@@ -40,4 +33,22 @@ export default class PathTree{
         return this.nodes.get(vertex);
     }
 
+    public isReached(vertex: Vertex): boolean{
+        return this.nodes.has(vertex);
+    }
+
+    public getOrCreateNode(vertex: Vertex): PathNode {
+        if (this.isReached(vertex)){
+            return this.getNode(vertex);
+        }
+        else{
+            const node = new PathNode(Number.POSITIVE_INFINITY, null, false);
+            this.nodes.set(vertex,node);
+            return this.getNode(vertex);
+        }
+    }
+
+    public getReachedVertices(): Vertex[] {
+        return Array.from(this.nodes.keys());
+    }
 }

@@ -3,6 +3,7 @@ import { Graph } from "../model/Graph";
 import { Edge } from "../model/Edge";
 import { RouteNotFound } from "../errors/RouteNotFound";
 import PathNode from "../model/PathNode";
+import PathTree from "../model/PathTree";
 
 /**
  * Find routes using Dijkstra's algorithm.
@@ -11,13 +12,12 @@ import PathNode from "../model/PathNode";
  */
 export class RoutingService {
 
-    //0.5
-    nodes: Map<Vertex, PathNode>;
+    //0.9 
+    public pathTree: PathTree;
 
     constructor(
         private graph: Graph
-    ) {
-        this.nodes = new Map();
+    ) {;
     }
 
     /**
@@ -27,16 +27,13 @@ export class RoutingService {
         // prepare graph for the visit
         this.initGraph(origin);
 
-        const origin_node = this.getNode(origin);
-        const destination_node = this.getNode(destination);
-
         // visit all vertices
         let current: Vertex | null;
         while ((current = this.findNextVertex()) != null) {
             this.visit(current);
             // until the destination is reached...
-            if (destination_node.cost != Number.POSITIVE_INFINITY) {
-                return this.buildRoute(destination);
+            if (this.pathTree.isReached(destination) && this.pathTree.getNode(destination).cost != Number.POSITIVE_INFINITY) {
+                return this.pathTree.getPath(destination);
             }
         }
 
@@ -47,27 +44,23 @@ export class RoutingService {
      * Prepare the graph to find a route from an origin.
      */
     initGraph(origin: Vertex) {
-        for (let vertex of this.graph.vertices) {
-            const node = new PathNode();
-            node.cost = origin == vertex ? 0.0 : Number.POSITIVE_INFINITY;
-            node.reachingEdge = null; 
-            node.visited = false;
-            this.nodes.set(vertex, node);
-        }
+        this.pathTree = new PathTree(origin);
     }
 
     /**
      * Explores out edges for a given vertex and try to reach vertex with a better cost.
      */
     private visit(vertex: Vertex) {
-        const node_vertex = this.getNode(vertex);
+        const node_vertex = this.pathTree.getNode(vertex);
         for (const outEdge of this.graph.getOutEdges(vertex)) {
             const reachedVertex = outEdge.getTarget();
             /*
              * Test if reachedVertex is reached with a better cost.
              * (Note that the cost is POSITIVE_INFINITY for unreached vertex)
+             * UPDATE 0.9: we create a new PathNode if reachedVertex waas not already reached:
+             * thus building the PathTree visits by visits
              */
-            const node_reachedVertex = this.getNode(reachedVertex);
+            const node_reachedVertex = this.pathTree.getOrCreateNode(reachedVertex);
             const newCost = node_vertex.cost + outEdge.getLength();
             if (newCost < node_reachedVertex.cost) {
                 node_reachedVertex.cost = newCost;
@@ -85,8 +78,9 @@ export class RoutingService {
     findNextVertex(): Vertex | null {
         let candidate: Vertex | null = null;
         let candidate_node: PathNode | null = null;
-        for (const vertex of this.graph.vertices) {
-            const node = this.getNode(vertex);
+        // iterating only on the reached vertices
+        for (const vertex of this.pathTree.getReachedVertices()) {
+            const node = this.pathTree.getNode(vertex);
             // already visited?
             if (node.visited) {
                 continue;
@@ -102,28 +96,6 @@ export class RoutingService {
             }
         }
         return candidate;
-    }
-
-    /**
-     * Build route to the reached destination.
-     */
-    private buildRoute(destination: Vertex): Edge[] {
-        const edges: Edge[] = [];
-        const node_destination = this.getNode(destination);
-        for (
-            let current = node_destination.reachingEdge;
-            current != null;
-            current = this.getNode(current.getSource()).reachingEdge
-        ) {
-            edges.push(current);
-        }
-
-        return edges.reverse();
-    }
-
-    //O.5
-    getNode(vertex: Vertex){
-        return this.nodes.get(vertex);
     }
 
 
